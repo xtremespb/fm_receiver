@@ -1,6 +1,10 @@
 #include <Arduino.h>
 
-#define DEFAULT_BL LOW
+#define ON HIGH
+#define OFF LOW
+
+#define DEFAULT_BL ON
+#define DEFAULT_VOL 4
 
 #define PIN_CLK 7
 #define PIN_DIN 6
@@ -33,3 +37,8 @@
 #define MENU_MANUAL 2
 #define MENU_AUTO 3
 #define MENU_SIGNAL 4
+#define MENU_BL 5
+
+#ifndef FW_VERSION
+#define FW_VERSION "2.00"
+#endif

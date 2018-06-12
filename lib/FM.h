@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <config.h>
 
 class FM {
  private:
@@ -13,7 +14,7 @@ class FM {
  public:  
   int strength = 0;
   bool stereo = false;
-  int volume = 5;
+  int volume = DEFAULT_VOL;
   String freqText = "";
   String station = "";
   String radiotext = "";

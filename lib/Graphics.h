@@ -12,13 +12,18 @@ class Graphics {
   void resetOldValues();
   int signalCurrent = 0;
   int signalCurrentSave = 0;
+  bool currentBL;
+  void drawBLMenu(bool item);
 
  public:
   int menu = 1;
   void init();
   void displayBasics();
   void drawMenuItem(String item);
-  void drawMenu();  
+  void drawMenu();
+  void showTuningBox();
+  void hideTuningBox();
+  void toggleBL();  
   void updateState(int strength, bool stereo, int volume, String freqText,
                    String station);
 };

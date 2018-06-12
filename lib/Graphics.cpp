@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include <Graphics.h>
 #include <LCD5110_Graph.h>
-#include <Tools.h>
-#include <config.h>
+#include "Graphics.h"
+#include "Tools.h"
+#include "config.h"
 
 extern unsigned char MediumNumbers[];
 extern unsigned char IconsFont[];

@@ -5,10 +5,10 @@
   For more information see: https://opensource.org/licenses/MIT
 */
 
-#include <./lib/FM.h>
-#include <./lib/Graphics.h>
-#include <./lib/Tools.h>
-#include <./lib/config.h>
+#include "lib/FM.h"
+#include "lib/Graphics.h"
+#include "lib/Tools.h"
+#include "lib/config.h"
 
 Graphics graphics;
 FM fm;

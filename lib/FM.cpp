@@ -1,6 +1,6 @@
+#include "FM.h"
 #include <Arduino.h>
 #include <Wire.h>
-#include "FM.h"
 
 void FM::writeReg(byte reg, unsigned int valor) {
   Wire.beginTransmission(0x11);
@@ -38,7 +38,7 @@ void FM::getRDS() {
       case 0:
         i = (RDS[1] & 3) << 1;
         segRDS[i] = (RDS[3] >> 8);
-        segRDS[i + 1] = (RDS[3] & 0xFF);        
+        segRDS[i + 1] = (RDS[3] & 0xFF);
         station = "";
         for (i = 0; i < 8; i++) {
           if (segRDS[i] > 31 && segRDS[i] < 127)

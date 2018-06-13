@@ -9,9 +9,9 @@ class FM {
   char indexRDS1;
   void writeReg(byte reg, unsigned int valor);
   int noRDSCounter = 0;
-  int freq = 193;  
+  int freq = 193;
 
- public:  
+ public:
   int strength = 0;
   bool stereo = false;
   int volume = DEFAULT_VOL;

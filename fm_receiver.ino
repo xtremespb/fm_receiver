@@ -1,14 +1,13 @@
 /*
   fm_receiver.ino - FM Receiver Project based on Arduino
   Copyright (c) 2017-2018 Michael A. Matveev. All right reserved.
-  This firmware is licensed under a MIT License.
-  For more information see: https://opensource.org/licenses/MIT
+  This firmware is licensed under a GNU GPL v.3 License.
+  For more information see: https://www.gnu.org/licenses/gpl-3.0.en.html
 */
 
 #include "lib/FM.h"
 #include "lib/Graphics.h"
 #include "lib/Tools.h"
-#include "lib/config.h"
 
 Graphics graphics;
 FM fm;
@@ -21,6 +20,8 @@ void setup() {
   fm.init();
   // Init Graphics module
   graphics.init();
+  // Show splash
+  graphics.showSplash();
   // Draw menu
   graphics.drawMenu();
 }
@@ -47,15 +48,15 @@ void loop() {
         break;
       case MENU_AUTO:
         graphics.showTuningBox();
-      	fm.autoTune(1);
-      	delay(500);
-      	graphics.hideTuningBox();   
+        fm.autoTune(1);
+        delay(500);
+        graphics.hideTuningBox();
         break;
       case MENU_BL:
-      	if (checkMillis2(450)) {
-      		graphics.toggleBL();
+        if (checkMillis2(450)) {
+          graphics.toggleBL();
         }
-      	break;  
+        break;
     }
   }
   // Right Button
@@ -68,16 +69,16 @@ void loop() {
         fm.higherFrequency();
         break;
       case MENU_AUTO:
-      	graphics.showTuningBox();
-      	fm.autoTune(0);
-      	delay(500);
-      	graphics.hideTuningBox();
+        graphics.showTuningBox();
+        fm.autoTune(0);
+        delay(500);
+        graphics.hideTuningBox();
         break;
       case MENU_BL:
         if (checkMillis2(450)) {
-      		graphics.toggleBL();
+          graphics.toggleBL();
         }
-      	break;  
+        break;
     }
   }
   // Read current state from FM Receiver

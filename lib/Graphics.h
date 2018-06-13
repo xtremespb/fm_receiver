@@ -8,7 +8,7 @@ class Graphics {
   int old_volume;
   String old_freqText;
   String old_station;
-  String old_radiotext; 
+  String old_radiotext;
   void resetOldValues();
   int signalCurrent = 0;
   int signalCurrentSave = 0;
@@ -23,7 +23,8 @@ class Graphics {
   void drawMenu();
   void showTuningBox();
   void hideTuningBox();
-  void toggleBL();  
+  void toggleBL();
+  void showSplash();
   void updateState(int strength, bool stereo, int volume, String freqText,
                    String station);
 };

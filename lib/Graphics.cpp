@@ -26,6 +26,7 @@ void Graphics::showTuningBox() {
 
 void Graphics::hideTuningBox() {
   display.clrScr();
+  resetOldValues();
   displayBasics();
   drawMenu();
 }

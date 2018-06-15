@@ -32,7 +32,7 @@ void loop() {
   // Menu Button
   if (inV > 500 && inV < 524 && checkMillis(300)) {
     graphics.menu++;
-    if (graphics.menu > 6) {
+    if (graphics.menu > 8) {
       graphics.menu = 1;
     }
     graphics.drawMenu();
@@ -57,6 +57,16 @@ void loop() {
           graphics.toggleBL();
         }
         break;
+      case MENU_BASS:
+        if (checkMillis2(450)) {
+          graphics.switchBass();
+          if (graphics.bass) {
+            fm.moreBass();
+          } else {
+            fm.lessBass();
+          }
+        }
+        break;
     }
   }
   // Right Button
@@ -79,6 +89,26 @@ void loop() {
           graphics.toggleBL();
         }
         break;
+      case MENU_BASS:
+        if (checkMillis2(450)) {
+          graphics.switchBass();
+          if (graphics.bass) {
+            fm.moreBass();
+          } else {
+            fm.lessBass();
+          }
+        }
+        break;
+      case MENU_BAND:
+        if (checkMillis2(450)) {
+          graphics.band++;
+          if (graphics.band > 3) {
+            graphics.band = 0;
+          }
+          graphics.drawBandSelect(graphics.band);
+          fm.setBandByIndex(graphics.band);
+        }
+        break;  
     }
   }
   // Read current state from FM Receiver

@@ -2,9 +2,16 @@
 
 #define ON HIGH
 #define OFF LOW
+#define BAND_WEST (0x0 << 2)
+#define BAND_JAPAN (0x1 << 2)
+#define BAND_WORLD (0x2 << 2)
+#define BAND_EAST (0x3 << 2)
 
 #define DEFAULT_BL ON
-#define DEFAULT_VOL 4
+#define DEFAULT_VOL 0
+#define DEFAULT_FREQ 10630
+#define DEFAULT_BAND BAND_WORLD
+#define DEFAULT_BAND_INDEX 2
 
 #define PIN_CLK 7
 #define PIN_DIN 6
@@ -38,6 +45,9 @@
 #define MENU_AUTO 3
 #define MENU_SIGNAL 4
 #define MENU_BL 5
+#define MENU_BASS 6
+#define MENU_BAND 7
+#define MENU_ABOUT 8
 
 #ifndef FW_VERSION
 #define FW_VERSION "2.00"

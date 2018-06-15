@@ -2,21 +2,122 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-void FM::writeReg(byte reg, unsigned int valor) {
+word FM::getBandAndSpacing() {
+  byte band = getRegister(RDA5807M_REG_TUNING) &
+              (RDA5807M_BAND_MASK | RDA5807M_SPACE_MASK);
+  // Separate channel spacing
+  const byte space = band & RDA5807M_SPACE_MASK;
+  if (band & RDA5807M_BAND_MASK == BAND_EAST &&
+      !(getRegister(RDA5807M_REG_BLEND) & RDA5807M_FLG_EASTBAND65M))
+    // Lower band limit is 50MHz
+    band = (band >> RDA5807M_BAND_SHIFT) + 1;
+  else
+    band >>= RDA5807M_BAND_SHIFT;
+  return word(space, band);
+};
+
+word FM::getFrequency(void) {
+  const word spaceandband = getBandAndSpacing();
+  return pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]) +
+         (getRegister(RDA5807M_REG_STATUS) & RDA5807M_READCHAN_MASK) *
+             pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]) /
+             10;
+};
+
+bool FM::setFrequency(word frequency) {
+  const word spaceandband = getBandAndSpacing();
+  const word origin =
+      pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]);
+  // Check that specified frequency falls within our current band limits
+  if (frequency < origin ||
+      frequency >
+          pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)]))
+    return false;
+  // Adjust start offset
+  frequency -= origin;
+  const byte spacing =
+      pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]);
+  // Check that the given frequency can be tuned given current channel spacing
+  if (frequency * 10 % spacing) return false;
+  // Attempt to tune to the requested frequency
+  updateRegister(
+      RDA5807M_REG_TUNING, RDA5807M_CHAN_MASK | RDA5807M_FLG_TUNE,
+      ((frequency * 10 / spacing) << RDA5807M_CHAN_SHIFT) | RDA5807M_FLG_TUNE);
+  return true;
+};
+
+word FM::getRegister(byte reg) {
+  word result;
+  Wire.beginTransmission(RDA5807M_I2C_ADDR_RANDOM);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(RDA5807M_I2C_ADDR_RANDOM, 2, true);
+  result = (word)Wire.read() << 8;
+  result |= Wire.read();
+  return result;
+};
+
+void FM::setRegister(byte reg, const word value) {
+  Wire.beginTransmission(RDA5807M_I2C_ADDR_RANDOM);
+  Wire.write(reg);
+  Wire.write(highByte(value));
+  Wire.write(lowByte(value));
+  Wire.endTransmission(true);
+};
+
+void FM::updateRegister(byte reg, word mask, word value) {
+  setRegister(reg, getRegister(reg) & ~mask | value);
+};
+
+void FM::writeRegister(byte reg, unsigned int value) {
   Wire.beginTransmission(0x11);
   Wire.write(reg);
-  Wire.write(valor >> 8);
-  Wire.write(valor & 0xFF);
+  Wire.write(value >> 8);
+  Wire.write(value & 0xFF);
   Wire.endTransmission();
+}
+
+void FM::setVolume() {
+  writeRegister(5, 0x84D0 | volume);
+}
+
+void FM::setBand(word band) {
+  updateRegister(RDA5807M_REG_TUNING, RDA5807M_BAND_MASK, band);
+}
+
+void FM::setBandByIndex(int idx) {
+  switch(idx) {
+    case 0:
+      setBand(BAND_WEST);
+      break;
+    case 1:
+      setBand(BAND_JAPAN);
+      break;  
+    case 2:
+      setBand(BAND_WORLD);
+      break;
+    case 3:
+      setBand(BAND_EAST);
+      break;
+  }
+  setFrequency(pgm_read_word(&RDA5807M_BandLowerLimits[idx]));
 }
 
 void FM::init() {
   Wire.begin();
-  writeReg(0x02, 0xC00d);  // Soft reset, enable RDS
-  writeReg(0x05, 0x84d8);
-  writeReg(5, 0x84D0 | volume);
+  setRegister(RDA5807M_REG_CONFIG, RDA5807M_FLG_DHIZ | RDA5807M_FLG_DMUTE |
+                                       RDA5807M_FLG_BASS | RDA5807M_FLG_SEEKUP |
+                                       RDA5807M_FLG_RDS | RDA5807M_FLG_NEW |
+                                       RDA5807M_FLG_ENABLE);
+  setBand(DEFAULT_BAND);
+  setVolume();
   setFrequency(freq);
+
 }
+
+void FM::moreBass() { writeRegister(0x02, 0xD00D); }
+
+void FM::lessBass() { writeRegister(0x02, 0xC00D); }
 
 void FM::getRDS() {
   Wire.beginTransmission(0x11);
@@ -70,16 +171,13 @@ int FM::readState() {
     state[i] = 256 * Wire.read() + Wire.read();
   }
   Wire.endTransmission();
-  freq = state[0] & 0x03ff;
+  freq = getFrequency();
   strength = state[1] >> 10;
   stereo = (state[0] & 0x0400) != 0;
   char buffer[30];
-  sprintf(buffer, "%04d ", 870 + freq);
+  sprintf(buffer, "%04d ", freq);
   freqText = "";
   for (int i = 0; i < 5; i++) {
-    if (i == 3) {
-      freqText += ".";
-    }
     freqText += buffer[i];
   }
   if ((state[0] & 0x8000) != 0) {
@@ -99,9 +197,9 @@ void FM::autoTune(byte direc) {
   byte i;
   isTuning = true;
   if (!direc)
-    writeReg(0x02, 0xC30d);
+    writeRegister(0x02, 0xC30d);
   else
-    writeReg(0x02, 0xC10d);
+    writeRegister(0x02, 0xC10d);
   for (i = 0; i < 10; i++) {
     delay(200);
     readState();
@@ -113,29 +211,20 @@ void FM::autoTune(byte direc) {
   }
 }
 
-void FM::setFrequency(int channel) {
-  byte nH, nL;
-  nH = channel >> 2;
-  nL = ((channel & 3) << 6 | 0x10);
-  Wire.beginTransmission(0x11);
-  Wire.write(0x03);
-  Wire.write(nH);
-  Wire.write(nL);
-  Wire.endTransmission();
-}
-
 void FM::lowerFrequency() {
-  freq--;
-  if (freq < 0) {
-    freq = 205;
+  const word spaceandband = getBandAndSpacing();  
+  freq = freq - 10;
+  if (freq < pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)])) {
+    freq = pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)]);
   }
   setFrequency(freq);
 }
 
 void FM::higherFrequency() {
-  freq++;
-  if (freq > 205) {
-    freq = 0;
+  const word spaceandband = getBandAndSpacing();  
+  freq = freq + 10;
+  if (freq < pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)])) {
+    freq = pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]);
   }
   setFrequency(freq);
 }
@@ -143,11 +232,11 @@ void FM::higherFrequency() {
 void FM::lowerVolume() {
   volume = volume - 1;
   if (volume < 0) volume = 0;
-  writeReg(5, 0x84D0 | volume);
+  setVolume();
 }
 
 void FM::higherVolume() {
   volume = volume + 1;
   if (volume > 15) volume = 15;
-  writeReg(5, 0x84D0 | volume);
+  setVolume();
 }

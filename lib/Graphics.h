@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "config.h"
 
 class Graphics {
  private:
@@ -12,11 +13,13 @@ class Graphics {
   void resetOldValues();
   int signalCurrent = 0;
   int signalCurrentSave = 0;
-  bool currentBL;
+  bool currentBL;  
   void drawBLMenu(bool item);
 
  public:
   int menu = 1;
+  bool bass = false;
+  int band = DEFAULT_BAND_INDEX;
   void init();
   void displayBasics();
   void drawMenuItem(String item);
@@ -25,6 +28,8 @@ class Graphics {
   void hideTuningBox();
   void toggleBL();
   void showSplash();
+  void switchBass();
+  void Graphics::drawBandSelect(int currentBand);
   void updateState(int strength, bool stereo, int volume, String freqText,
                    String station);
 };

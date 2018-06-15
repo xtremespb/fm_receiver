@@ -2,9 +2,9 @@
 #include <Arduino.h>
 #include <LCD5110_Graph.h>
 #include "Tools.h"
+#include "about.c"
 #include "config.h"
 #include "logo.c"
-#include "about.c"
 extern unsigned char MediumNumbers[];
 extern unsigned char IconsFont[];
 extern unsigned char TinyFont[];
@@ -18,6 +18,7 @@ void Graphics::showSplash() {
   display.update();
   delay(1500);
   display.clrScr();
+  display.update();
 }
 
 void Graphics::showTuningBox() {
@@ -62,6 +63,8 @@ void Graphics::drawMenuItem(String item) {
       display.setPixel(x, y);
     }
   }
+  display.clrPixel(0, 47);
+  display.clrPixel(82, 47);
   display.setFont(MedvedFont);
   display.invertText(true);
   display.print(utf8rus(item), CENTER, 39);
@@ -99,41 +102,92 @@ void Graphics::drawBLMenu(bool on) {
   display.disableSleep();
 }
 
+void Graphics::drawBandSelect(int currentBand) {
+  int y0;
+  switch (band) {
+    case 0:
+      y0 = 5;
+      break;
+    case 1:
+      y0 = 13;
+      break;
+    case 2:
+      y0 = 21;
+      break;
+    case 3:
+      y0 = 29;
+      break;
+  }
+  display.update();
+  display.setPixel(10, y0+1);
+  display.setPixel(11, y0+1);
+  display.setPixel(10, y0+2);
+  display.setPixel(11, y0+2);
+  display.update();
+  delay(50);
+  display.disableSleep();
+}
+
+void Graphics::switchBass() {
+  bass = !bass;
+  drawBLMenu(bass);
+  display.update();
+}
+
 void Graphics::drawMenu() {
   switch (menu) {
-    case 1:
+    case MENU_VOLUME:
       display.clrScr();
       drawMenuItem("Громкость");
       resetOldValues();
       displayBasics();
       break;
-    case 2:
+    case MENU_MANUAL:
       drawMenuItem("Ручн. настр.");
       // resetOldValues();
       // displayBasics();
       break;
-    case 3:
+    case MENU_AUTO:
       drawMenuItem("Автонастр.");
       // resetOldValues();
       // displayBasics();
       break;
-    case 4:
+    case MENU_SIGNAL:
       display.clrScr();
       drawMenuItem("Сигнал");
       signalCurrent = 9;
       break;
-    case 5:
+    case MENU_BL:
       display.clrScr();
       drawMenuItem("Подсветка");
       display.setFont(MedvedFont);
       display.print(utf8rus("Вкл. Выкл."), CENTER, 15);
       drawBLMenu(currentBL);
       break;
-    case 6:
+    case MENU_BASS:
+      display.clrScr();
+      drawMenuItem("Бас");
+      display.setFont(MedvedFont);
+      display.print(utf8rus("Вкл. Выкл."), CENTER, 15);
+      drawBLMenu(bass);
+      display.update();
+      break;
+    case MENU_BAND:
+      display.clrScr();
+      drawMenuItem("Диапазон");
+      display.setFont(TinyFont);
+      display.print("US / EUROPE", 15, 5);
+      display.print("JAPAN", 15, 13);
+      display.print("WORLDWIDE", 15, 21);
+      display.print("EAST EUROPE", 15, 29);
+      display.update();
+      drawBandSelect(band);
+      break;
+    case MENU_ABOUT:
       display.clrScr();
       display.setFont(TinyFont);
       display.drawBitmap(0, 0, about, 84, 35);
-      display.print(utf8rus(FW_VERSION), 30, 30);
+      display.print(utf8rus(FW_VERSION), 50, 23);
       drawMenuItem("Прошивка");
       break;
   }
@@ -157,13 +211,17 @@ void Graphics::updateState(int strength, bool stereo, int volume,
         if (freqText.substring(0, 1) == "1") {
           display.print(freqText.substring(0, 3), 6, 0);
         } else {
-          display.print(freqText.substring(1, 3), 18, 0);
+          display.print(freqText.substring(0, 2), 18, 0);
         }
         display.setPixel(44, 14);
         display.setPixel(45, 14);
         display.setPixel(44, 15);
         display.setPixel(45, 15);
-        display.print(freqText.substring(4, 5), 48, 0);
+        if (freqText.substring(0, 1) == "1") {
+          display.print(freqText.substring(3, 4), 48, 0);
+        } else {
+          display.print(freqText.substring(2, 3), 48, 0);
+        }        
         old_freqText = freqText;
       }
       if (strength != old_strength && checkMillis2(300)) {

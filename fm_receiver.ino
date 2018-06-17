@@ -67,6 +67,16 @@ void loop() {
           }
         }
         break;
+      case MENU_BAND:
+        if (checkMillis2(250)) {
+          graphics.band--;
+          if (graphics.band < 0) {
+            graphics.band = 3;
+          }
+          graphics.drawBandSelect(graphics.band);
+          fm.setBandByIndex(graphics.band);
+        }
+        break;
     }
   }
   // Right Button
@@ -100,7 +110,7 @@ void loop() {
         }
         break;
       case MENU_BAND:
-        if (checkMillis2(450)) {
+        if (checkMillis2(250)) {
           graphics.band++;
           if (graphics.band > 3) {
             graphics.band = 0;

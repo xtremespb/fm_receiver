@@ -50,5 +50,5 @@
 #define MENU_ABOUT 8
 
 #ifndef FW_VERSION
-#define FW_VERSION "2.00"
+#define FW_VERSION "2.04"
 #endif

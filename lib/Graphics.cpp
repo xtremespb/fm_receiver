@@ -5,6 +5,7 @@
 #include "about.c"
 #include "config.h"
 #include "logo.c"
+const String Bands[5] PROGMEM = { "US/EUROPE", "JAPAN", "WORLDWIDE", "EAST EUROPE" };
 extern unsigned char MediumNumbers[];
 extern unsigned char IconsFont[];
 extern unsigned char TinyFont[];
@@ -19,6 +20,8 @@ void Graphics::showSplash() {
   delay(1500);
   display.clrScr();
   display.update();
+  delay(50);
+  display.disableSleep();
 }
 
 void Graphics::showTuningBox() {
@@ -103,26 +106,25 @@ void Graphics::drawBLMenu(bool on) {
 }
 
 void Graphics::drawBandSelect(int currentBand) {
-  int y0;
-  switch (band) {
-    case 0:
-      y0 = 5;
-      break;
-    case 1:
-      y0 = 13;
-      break;
-    case 2:
-      y0 = 21;
-      break;
-    case 3:
-      y0 = 29;
-      break;
+  display.setFont(TinyFont);
+  for (int i = 0; i < 4; i++) {
+    if (currentBand == i) {
+      display.invertText(true);      
+    }
+    for (int x = 13; x < 72; x++) {
+      for (int y = 2 + (8 * i); y < 9 + (8 * i); y++) {
+        if (currentBand == i) {
+          display.setPixel(x, y);
+        } else {
+          display.clrPixel(x, y);
+        }
+      }
+    }
+    display.print(Bands[i], 15, 3 + (8 * i));
+    if (currentBand == i) {
+      display.invertText(false);
+    }
   }
-  display.update();
-  display.setPixel(10, y0+1);
-  display.setPixel(11, y0+1);
-  display.setPixel(10, y0+2);
-  display.setPixel(11, y0+2);
   display.update();
   delay(50);
   display.disableSleep();
@@ -175,12 +177,6 @@ void Graphics::drawMenu() {
     case MENU_BAND:
       display.clrScr();
       drawMenuItem("Диапазон");
-      display.setFont(TinyFont);
-      display.print("US / EUROPE", 15, 5);
-      display.print("JAPAN", 15, 13);
-      display.print("WORLDWIDE", 15, 21);
-      display.print("EAST EUROPE", 15, 29);
-      display.update();
       drawBandSelect(band);
       break;
     case MENU_ABOUT:
@@ -278,7 +274,7 @@ void Graphics::updateState(int strength, bool stereo, int volume,
       if (old_station != station && checkMillis2(300) && station.length() > 0) {
         display.setFont(TinyFont);
         display.print("          ", 15, 20);
-        display.print(station, 15, 20);
+        display.print(station, 15, 20);        
         old_station = station;
         needUpdate = true;
       }

@@ -12,7 +12,9 @@ class Graphics {
   String old_radiotext;
   void resetOldValues();
   int signalCurrent = 0;
-  int signalCurrentSave = 0;
+  int strengthAbsSave = 0;
+  int visualCurrent1 = 0;
+  int visualSave1 = 0;
   bool currentBL;  
   void drawBLMenu(bool item);
 

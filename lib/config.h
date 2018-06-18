@@ -8,7 +8,7 @@
 #define BAND_EAST (0x3 << 2)
 
 #define DEFAULT_BL ON
-#define DEFAULT_VOL 0
+#define DEFAULT_VOL 3
 #define DEFAULT_FREQ 10630
 #define DEFAULT_BAND BAND_WORLD
 #define DEFAULT_BAND_INDEX 2
@@ -40,6 +40,8 @@
 #define ICON_BLANK "1"
 #define ICON_RDS "2"
 
+#define MENU_ITEMS_COUNT 9
+
 #define MENU_VOLUME 1
 #define MENU_MANUAL 2
 #define MENU_AUTO 3
@@ -47,7 +49,8 @@
 #define MENU_BL 5
 #define MENU_BASS 6
 #define MENU_BAND 7
-#define MENU_ABOUT 8
+#define MENU_VISUAL 8
+#define MENU_ABOUT 9
 
 #ifndef FW_VERSION
 #define FW_VERSION "2.04"

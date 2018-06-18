@@ -32,7 +32,7 @@ void loop() {
   // Menu Button
   if (inV > 500 && inV < 524 && checkMillis(300)) {
     graphics.menu++;
-    if (graphics.menu > 8) {
+    if (graphics.menu > MENU_ITEMS_COUNT - 1) {
       graphics.menu = 1;
     }
     graphics.drawMenu();

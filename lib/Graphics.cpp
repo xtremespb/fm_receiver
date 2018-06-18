@@ -5,7 +5,8 @@
 #include "about.c"
 #include "config.h"
 #include "logo.c"
-const String Bands[5] PROGMEM = { "US/EUROPE", "JAPAN", "WORLDWIDE", "EAST EUROPE" };
+const String Bands[5] PROGMEM = {"US/EUROPE", "JAPAN", "WORLDWIDE",
+                                 "EAST EUROPE"};
 extern unsigned char MediumNumbers[];
 extern unsigned char IconsFont[];
 extern unsigned char TinyFont[];
@@ -109,7 +110,7 @@ void Graphics::drawBandSelect(int currentBand) {
   display.setFont(TinyFont);
   for (int i = 0; i < 4; i++) {
     if (currentBand == i) {
-      display.invertText(true);      
+      display.invertText(true);
     }
     for (int x = 13; x < 72; x++) {
       for (int y = 2 + (8 * i); y < 9 + (8 * i); y++) {
@@ -158,6 +159,7 @@ void Graphics::drawMenu() {
       display.clrScr();
       drawMenuItem("Сигнал");
       signalCurrent = 9;
+      strengthAbsSave = 0;
       break;
     case MENU_BL:
       display.clrScr();
@@ -178,6 +180,12 @@ void Graphics::drawMenu() {
       display.clrScr();
       drawMenuItem("Диапазон");
       drawBandSelect(band);
+      break;
+    case MENU_VISUAL:
+      display.clrScr();
+      visualCurrent1 = 0;
+      visualSave1 = 25;
+      drawMenuItem("Визуализация");
       break;
     case MENU_ABOUT:
       display.clrScr();
@@ -217,7 +225,7 @@ void Graphics::updateState(int strength, bool stereo, int volume,
           display.print(freqText.substring(3, 4), 48, 0);
         } else {
           display.print(freqText.substring(2, 3), 48, 0);
-        }        
+        }
         old_freqText = freqText;
       }
       if (strength != old_strength && checkMillis2(300)) {
@@ -274,7 +282,7 @@ void Graphics::updateState(int strength, bool stereo, int volume,
       if (old_station != station && checkMillis2(300) && station.length() > 0) {
         display.setFont(TinyFont);
         display.print("          ", 15, 20);
-        display.print(station, 15, 20);        
+        display.print(station, 15, 20);
         old_station = station;
         needUpdate = true;
       }
@@ -290,9 +298,6 @@ void Graphics::updateState(int strength, bool stereo, int volume,
         old_volume = volume;
       }
       if (needUpdate) {
-        /*digitalWrite(PIN_BL, HIGH);
-        delay(300);
-        digitalWrite(PIN_BL, LOW);*/
         display.update();
         delay(50);
         display.disableSleep();
@@ -300,10 +305,9 @@ void Graphics::updateState(int strength, bool stereo, int volume,
       break;
     case MENU_SIGNAL:
       if (checkMillis2(100)) {
-        int strengthAbs = strength / 1.8;
+        int strengthAbs = 35 - (strength / 1.8);
         signalCurrent++;
         if (signalCurrent > 83) {
-          // display.clrScr();
           for (int x = 9; x < 84; x++) {
             for (int y = 0; y < 36; y++) {
               display.clrPixel(x, y);
@@ -314,14 +318,46 @@ void Graphics::updateState(int strength, bool stereo, int volume,
         display.setFont(TinyFont);
         display.print("  ", 0, 30);
         display.printNumI(strength, 0, 30);
-        display.setPixel(signalCurrent, 35 - strengthAbs);
+        if (strengthAbs == strengthAbsSave) {
+          display.setPixel(signalCurrent, strengthAbs);
+        } else {
+          if (strengthAbs > strengthAbsSave) {
+            display.drawLine(signalCurrent, strengthAbsSave - 1, signalCurrent,
+                             strengthAbs);
+          } else {
+            display.drawLine(signalCurrent, strengthAbsSave + 1, signalCurrent,
+                             strengthAbs);
+          }
+        }
+        strengthAbsSave = strengthAbs;
         display.update();
         delay(50);
         display.disableSleep();
       }
       break;
-    case MENU_BL:
-    // Nothing to update
-    break;
+    case MENU_VISUAL:
+      int v1 = (1023 - analogRead(A1)) / 30;
+      if (visualCurrent1 > 83) {
+        for (int x = 0; x < 84; x++) {
+          for (int y = 0; y < 36; y++) {
+            display.clrPixel(x, y);
+          }
+        }
+        visualCurrent1 = 0;
+      }
+      if (visualSave1 == v1) {
+        display.setPixel(visualCurrent1, v1);
+      } else {
+        if (v1 > visualSave1) {
+          display.drawLine(visualCurrent1, visualSave1 - 1, visualCurrent1, v1);
+        } else {
+          display.drawLine(visualCurrent1, visualSave1 + 1, visualCurrent1, v1);
+        }
+      }
+      visualCurrent1++;
+      visualSave1 = v1;
+      delay(50);
+      display.disableSleep();
+      break;
   }
 }

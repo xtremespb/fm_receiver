@@ -1,12 +1,26 @@
+/*
+
+  FM Receiver Project based on Arduino
+  Copyright (c) 2017-2018 Michael A. Matveev. All right reserved.
+  This firmware is licensed under a GNU GPL v.3 License.
+
+  For more information see: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+*/
+
 #include "Graphics.h"
 #include <Arduino.h>
-#include <LCD5110_Graph.h>
+#include "LCD5110_Graph.h"
 #include "Tools.h"
 #include "about.c"
 #include "config.h"
+#include "internal.h"
 #include "logo.c"
+
 const String Bands[5] PROGMEM = {"US/EUROPE", "JAPAN", "WORLDWIDE",
-                                 "EAST EUROPE"};
+                                 "EAST EUROPE"
+                                };
+
 extern unsigned char MediumNumbers[];
 extern unsigned char IconsFont[];
 extern unsigned char TinyFont[];
@@ -62,17 +76,9 @@ void Graphics::displayBasics() {
 }
 
 void Graphics::drawMenuItem(String item) {
-  for (int x = 0; x < 83; x++) {
-    for (int y = 37; y < 48; y++) {
-      display.setPixel(x, y);
-    }
-  }
-  display.clrPixel(0, 47);
-  display.clrPixel(82, 47);
   display.setFont(MedvedFont);
-  display.invertText(true);
-  display.print(utf8rus(item), CENTER, 39);
-  display.invertText(false);
+  display.print("            ", CENTER, 40);
+  display.print(utf8rus(item), CENTER, 40);
   display.update();
   delay(50);
   display.disableSleep();
@@ -147,13 +153,9 @@ void Graphics::drawMenu() {
       break;
     case MENU_MANUAL:
       drawMenuItem("Ручн. настр.");
-      // resetOldValues();
-      // displayBasics();
       break;
     case MENU_AUTO:
       drawMenuItem("Автонастр.");
-      // resetOldValues();
-      // displayBasics();
       break;
     case MENU_SIGNAL:
       display.clrScr();
@@ -191,7 +193,9 @@ void Graphics::drawMenu() {
       display.clrScr();
       display.setFont(TinyFont);
       display.drawBitmap(0, 0, about, 84, 35);
-      display.print(utf8rus(FW_VERSION), 50, 23);
+      display.printNumI(HW_REVISION, 53, 26);
+      display.print(".", 56, 26);
+      display.printNumI(FW_VERSION, 60, 26);
       drawMenuItem("Прошивка");
       break;
   }
@@ -336,14 +340,17 @@ void Graphics::updateState(int strength, bool stereo, int volume,
       }
       break;
     case MENU_VISUAL:
-      int v1 = (1023 - analogRead(A1)) / 30;
+      int v1 = (1023 - analogRead(A2)) / 30;
       if (visualCurrent1 > 83) {
         for (int x = 0; x < 84; x++) {
-          for (int y = 0; y < 36; y++) {
+          for (int y = 0; y < 37; y++) {
             display.clrPixel(x, y);
           }
         }
         visualCurrent1 = 0;
+        display.update();
+        delay(50);
+        display.disableSleep();
       }
       if (visualSave1 == v1) {
         display.setPixel(visualCurrent1, v1);
@@ -356,6 +363,7 @@ void Graphics::updateState(int strength, bool stereo, int volume,
       }
       visualCurrent1++;
       visualSave1 = v1;
+      display.update();
       delay(50);
       display.disableSleep();
       break;

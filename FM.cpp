@@ -1,3 +1,13 @@
+/*
+
+  FM Receiver Project based on Arduino
+  Copyright (c) 2017-2018 Michael A. Matveev. All right reserved.
+  This firmware is licensed under a GNU GPL v.3 License.
+
+  For more information see: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+*/
+
 #include "FM.h"
 #include <Arduino.h>
 #include <Wire.h>
@@ -20,29 +30,29 @@ word FM::getFrequency(void) {
   const word spaceandband = getBandAndSpacing();
   return pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]) +
          (getRegister(RDA5807M_REG_STATUS) & RDA5807M_READCHAN_MASK) *
-             pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]) /
-             10;
+         pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]) /
+         10;
 };
 
 bool FM::setFrequency(word frequency) {
   const word spaceandband = getBandAndSpacing();
   const word origin =
-      pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]);
+    pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]);
   // Check that specified frequency falls within our current band limits
   if (frequency < origin ||
       frequency >
-          pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)]))
+      pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)]))
     return false;
   // Adjust start offset
   frequency -= origin;
   const byte spacing =
-      pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]);
+    pgm_read_byte(&RDA5807M_ChannelSpacings[highByte(spaceandband)]);
   // Check that the given frequency can be tuned given current channel spacing
   if (frequency * 10 % spacing) return false;
   // Attempt to tune to the requested frequency
   updateRegister(
-      RDA5807M_REG_TUNING, RDA5807M_CHAN_MASK | RDA5807M_FLG_TUNE,
-      ((frequency * 10 / spacing) << RDA5807M_CHAN_SHIFT) | RDA5807M_FLG_TUNE);
+    RDA5807M_REG_TUNING, RDA5807M_CHAN_MASK | RDA5807M_FLG_TUNE,
+    ((frequency * 10 / spacing) << RDA5807M_CHAN_SHIFT) | RDA5807M_FLG_TUNE);
   return true;
 };
 
@@ -86,13 +96,13 @@ void FM::setBand(word band) {
 }
 
 void FM::setBandByIndex(int idx) {
-  switch(idx) {
+  switch (idx) {
     case 0:
       setBand(BAND_WEST);
       break;
     case 1:
       setBand(BAND_JAPAN);
-      break;  
+      break;
     case 2:
       setBand(BAND_WORLD);
       break;
@@ -106,18 +116,21 @@ void FM::setBandByIndex(int idx) {
 void FM::init() {
   Wire.begin();
   setRegister(RDA5807M_REG_CONFIG, RDA5807M_FLG_DHIZ | RDA5807M_FLG_DMUTE |
-                                       RDA5807M_FLG_BASS | RDA5807M_FLG_SEEKUP |
-                                       RDA5807M_FLG_RDS | RDA5807M_FLG_NEW |
-                                       RDA5807M_FLG_ENABLE);
+              RDA5807M_FLG_BASS | RDA5807M_FLG_SEEKUP |
+              RDA5807M_FLG_RDS | RDA5807M_FLG_NEW |
+              RDA5807M_FLG_ENABLE);
   setBand(DEFAULT_BAND);
   setVolume();
   setFrequency(freq);
-
 }
 
-void FM::moreBass() { writeRegister(0x02, 0xD00D); }
+void FM::moreBass() {
+  writeRegister(0x02, 0xD00D);
+}
 
-void FM::lessBass() { writeRegister(0x02, 0xC00D); }
+void FM::lessBass() {
+  writeRegister(0x02, 0xC00D);
+}
 
 void FM::getRDS() {
   Wire.beginTransmission(0x11);
@@ -212,7 +225,7 @@ void FM::autoTune(byte direc) {
 }
 
 void FM::lowerFrequency() {
-  const word spaceandband = getBandAndSpacing();  
+  const word spaceandband = getBandAndSpacing();
   freq = freq - 10;
   if (freq < pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)])) {
     freq = pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)]);
@@ -221,9 +234,9 @@ void FM::lowerFrequency() {
 }
 
 void FM::higherFrequency() {
-  const word spaceandband = getBandAndSpacing();  
+  const word spaceandband = getBandAndSpacing();
   freq = freq + 10;
-  if (freq < pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)])) {
+  if (freq > pgm_read_word(&RDA5807M_BandHigherLimits[lowByte(spaceandband)])) {
     freq = pgm_read_word(&RDA5807M_BandLowerLimits[lowByte(spaceandband)]);
   }
   setFrequency(freq);

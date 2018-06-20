@@ -1,4 +1,19 @@
-#include <Arduino.h>
+/*
+
+  FM Receiver Project based on Arduino
+  Copyright (c) 2017-2018 Michael A. Matveev. All right reserved.
+  This firmware is licensed under a GNU GPL v.3 License.
+
+  For more information see: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+*/
+
+#ifndef FW_VERSION
+#define FW_VERSION 1
+#endif
+#ifndef HW_REVISION
+#define HW_REVISION 3
+#endif
 
 #define ON HIGH
 #define OFF LOW
@@ -7,26 +22,7 @@
 #define BAND_WORLD (0x2 << 2)
 #define BAND_EAST (0x3 << 2)
 
-#define DEFAULT_BL ON
-#define DEFAULT_VOL 3
-#define DEFAULT_FREQ 10630
-#define DEFAULT_BAND BAND_WORLD
-#define DEFAULT_BAND_INDEX 2
-
-#define PIN_CLK 7
-#define PIN_DIN 6
-#define PIN_DC 5
-#define PIN_RST 4
-#define PIN_CE 3
-#define PIN_BL 2
-
-/*#define PIN_CLK  4
-#define PIN_DIN  5
-#define PIN_DC   2
-#define PIN_RST  0
-#define PIN_CE   1
-#define PIN_BL   3*/
-
+// Graphical definitions for font icons
 #define ICON_SIGNAL_1 "'"
 #define ICON_SIGNAL_2 "("
 #define ICON_SIGNAL_3 ")"
@@ -40,8 +36,13 @@
 #define ICON_BLANK "1"
 #define ICON_RDS "2"
 
+// Number of items in menu
+#if HW_REVISION > 3
 #define MENU_ITEMS_COUNT 9
-
+#else
+#define MENU_ITEMS_COUNT 8
+#endif
+// Menu items
 #define MENU_VOLUME 1
 #define MENU_MANUAL 2
 #define MENU_AUTO 3
@@ -49,9 +50,13 @@
 #define MENU_BL 5
 #define MENU_BASS 6
 #define MENU_BAND 7
+#if HW_REVISION > 3
 #define MENU_VISUAL 8
+#else
+#define MENU_VISUAL -1
+#endif
+#if HW_REVISION > 3
 #define MENU_ABOUT 9
-
-#ifndef FW_VERSION
-#define FW_VERSION "2.04"
+#else
+#define MENU_ABOUT 8
 #endif

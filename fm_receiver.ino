@@ -1,13 +1,16 @@
 /*
-  fm_receiver.ino - FM Receiver Project based on Arduino
+
+  FM Receiver Project based on Arduino
   Copyright (c) 2017-2018 Michael A. Matveev. All right reserved.
   This firmware is licensed under a GNU GPL v.3 License.
+
   For more information see: https://www.gnu.org/licenses/gpl-3.0.en.html
+
 */
 
-#include "lib/FM.h"
-#include "lib/Graphics.h"
-#include "lib/Tools.h"
+#include "FM.h"
+#include "Graphics.h"
+#include "Tools.h"
 
 Graphics graphics;
 FM fm;
@@ -29,15 +32,15 @@ void setup() {
 void loop() {
   // Read analog signal from buttons
   int inV = analogRead(A0);
-  // Menu Button
+  // Menu Button presseded
   if (inV > 500 && inV < 524 && checkMillis(300)) {
     graphics.menu++;
-    if (graphics.menu > MENU_ITEMS_COUNT - 1) {
+    if (graphics.menu > MENU_ITEMS_COUNT) {
       graphics.menu = 1;
     }
     graphics.drawMenu();
   }
-  // Left Button
+  // Left Button presseded
   if (inV < 50 && checkMillis(150)) {
     switch (graphics.menu) {
       case MENU_VOLUME:
@@ -79,7 +82,7 @@ void loop() {
         break;
     }
   }
-  // Right Button
+  // Right Button pressed
   if (inV < 700 && inV > 660 && checkMillis(150)) {
     switch (graphics.menu) {
       case MENU_VOLUME:
@@ -118,7 +121,7 @@ void loop() {
           graphics.drawBandSelect(graphics.band);
           fm.setBandByIndex(graphics.band);
         }
-        break;  
+        break;
     }
   }
   // Read current state from FM Receiver

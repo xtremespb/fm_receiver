@@ -1,0 +1,6 @@
+FM Receiver Project based on Arduino
+Firmware: copyright (c) 2017-2018 Michael A. Matveev.
+This firmware is licensed under a GNU GPL v.3 License.
+Hardware: copyright (c) 2017-2018 Konstantin K. Tomarevsky.
+
+Can be built using Arduino IDE.

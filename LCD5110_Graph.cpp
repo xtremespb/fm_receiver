@@ -20,16 +20,11 @@
 */
 
 #include "LCD5110_Graph.h"
-#if defined(__AVR__)
 #include <avr/pgmspace.h>
-#include "HW_AVR.h"
-#elif defined(__PIC32MX__)
-#pragma message("Compiling for PIC32 Architecture...")
-#include "hardware/pic32/HW_PIC32.h"
-#elif defined(__arm__)
-#pragma message("Compiling for ARM Architecture...")
-#include "hardware/arm/HW_ARM.h"
-#endif
+
+void _convert_float(char *buf, double num, int width, byte prec) {
+  dtostrf(num, width, prec, buf);
+}
 
 LCD5110::LCD5110(int SCK, int MOSI, int DC, int RST, int CS) {
   P_SCK = portOutputRegister(digitalPinToPort(SCK));
@@ -285,7 +280,7 @@ void LCD5110::printNumF(double num, byte dec, int x, int y, char divider,
 void LCD5110::_print_char(unsigned char c, int x, int y) {
   if ((cfont.y_size % 8) == 0) {
     int font_idx =
-        ((c - cfont.offset) * (cfont.x_size * (cfont.y_size / 8))) + 4;
+      ((c - cfont.offset) * (cfont.x_size * (cfont.y_size / 8))) + 4;
     for (int rowcnt = 0; rowcnt < (cfont.y_size / 8); rowcnt++) {
       for (int cnt = 0; cnt < cfont.x_size; cnt++) {
         for (int b = 0; b < 8; b++)
@@ -303,7 +298,7 @@ void LCD5110::_print_char(unsigned char c, int x, int y) {
     }
   } else {
     int font_idx =
-        ((c - cfont.offset) * ((cfont.x_size * cfont.y_size / 8))) + 4;
+      ((c - cfont.offset) * ((cfont.x_size * cfont.y_size / 8))) + 4;
     int cbyte = fontbyte(font_idx);
     int cbit = 7;
     for (int cx = 0; cx < cfont.x_size; cx++) {
